@@ -1,0 +1,51 @@
+﻿@model IEnumerable<CarMaintenance.Car>
+
+@{
+    ViewData["Title"] = "CarDetail";
+}
+
+<h1>車輛明細</h1>
+
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Brand)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Model)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Year)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Id)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Brand)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Model)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Year)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Id)
+                </td>
+                <td>
+                    <a asp-action="CarEdit" asp-route-id="@item.Id">編輯</a> |
+                    <a asp-action="BillDetail" asp-route-carId="@item.Id">帳單</a> |
+                    <a asp-action="CarDelete" asp-route-id="@item.Id" style="color:red" onclick="return confirm('確定要刪除嗎?')">刪除</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
