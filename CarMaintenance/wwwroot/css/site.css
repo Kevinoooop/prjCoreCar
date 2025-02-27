@@ -14,5 +14,9 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
 }
+
+    body img.IndexImg {
+        height: 60vh;
+    }

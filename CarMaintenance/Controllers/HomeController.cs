@@ -8,11 +8,12 @@ namespace CarMaintenance.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        RepairContext db = new RepairContext();
-
-        public HomeController(ILogger<HomeController> logger)
+        //RepairContext db = new RepairContext();
+        private RepairContext _db;
+        public HomeController(ILogger<HomeController> logger , RepairContext repairContext)
         {
             _logger = logger;
+            _db = repairContext;
         }
 
         public IActionResult Index()
@@ -26,11 +27,11 @@ namespace CarMaintenance.Controllers
             List<Customer> customers;
             if (name != null)
             {
-                customers = db.Customers.Where(m => m.Name == name && m.IsDelete == false).ToList();
+                customers = _db.Customers.Where(m => m.Name.Contains(name) && m.IsDelete == false).ToList();
             }
             else
             {
-                customers = db.Customers.Where(m => m.IsDelete == false).ToList();
+                customers = _db.Customers.Where(m => m.IsDelete == false).ToList();
             }
             return View(customers);
         }
@@ -45,7 +46,7 @@ namespace CarMaintenance.Controllers
         public IActionResult Create(Customer customer)
         {
             var customers = new Customer();
-            var lastCustomer = db.Customers.OrderByDescending(c => c.Id).FirstOrDefault();
+            var lastCustomer = _db.Customers.OrderByDescending(c => c.Id).FirstOrDefault();
             if (lastCustomer == null)
             {
                 customers.Id = 0;
@@ -56,45 +57,50 @@ namespace CarMaintenance.Controllers
             }
             customers.Name = customer.Name;
             customers.Phone = customer.Phone;
-            db.Customers.Add(customers);
-            db.SaveChanges();
-            return RedirectToAction("Index");
+            _db.Customers.Add(customers);
+            _db.SaveChanges();
+            return RedirectToAction("CustomerDetail");
         }
 
         public IActionResult Delete(int id)
         {
-            var customer = db.Customers.Where(m => m.Id == id).FirstOrDefault();
+            var customer = _db.Customers.FirstOrDefault(m => m.Id == id);
             customer.IsDelete = true;
-            db.SaveChanges();
+            _db.SaveChanges();
             return RedirectToAction("Index");
         }
 
 
         public IActionResult Edit(int id)
         {
-            var customer = db.Customers.Where(m => m.Id == id).FirstOrDefault();
+
+
+            var customer = _db.Customers.FirstOrDefault(m => m.Id == id);
+
+       
             return View(customer);
         }
 
         [HttpPost]
         public IActionResult Edit(Customer customer)
         {
-            var modify = db.Customers.Where(m => m.Id == customer.Id).FirstOrDefault();
+
+            var modify = _db.Customers.FirstOrDefault(m => m.Id == customer.Id);
             modify.Name = customer.Name;
             modify.Phone = customer.Phone;
-            db.SaveChanges();
+            _db.SaveChanges();
             return RedirectToAction("Index");
         }
 
         public IActionResult CarDetail(int Id)
         {
-            var car = db.Cars.Where(m => m.CustomerId == Id && m.IsDelete == false).ToList();
+            var car = _db.Cars.Where(m => m.CustomerId == Id && m.IsDelete == false).ToList();
             return View(car);
         }
 
         public IActionResult CarCreate()
         {
-            ViewBag.CustomerIds = new SelectList(db.Customers, "Id", "Name");
+            ViewBag.CustomerIds = new SelectList(_db.Customers, "Id", "Name");
             return View();
         }
 
@@ -109,34 +115,34 @@ namespace CarMaintenance.Controllers
                 Model = car.Model,
                 Year = car.Year
             };
-            db.Cars.Add(modify);
-            db.SaveChanges();
+            _db.Cars.Add(modify);
+            _db.SaveChanges();
             return RedirectToAction("CarDetail", new { Id = car.CustomerId });
         }
 
         public IActionResult CarDelete(string Id)
         {
-            var car = db.Cars.Where(m => m.Id == Id).FirstOrDefault();
+            var car = _db.Cars.FirstOrDefault(m => m.Id == Id);
             car.IsDelete = true;
-            db.SaveChanges();
+            _db.SaveChanges();
             int CustomerId = car.CustomerId;
             return RedirectToAction("CarDetail", new { Id = CustomerId });
         }
 
         public IActionResult CarEdit(string id)
         {
-            var car = db.Cars.Where(m => m.Id == id).FirstOrDefault();
+            var car = _db.Cars.FirstOrDefault(m => m.Id == id);
             return View(car);
         }
 
         [HttpPost]
         public IActionResult CarEdit(Car car)
         {
-            var modify = db.Cars.Where(m => m.Id == car.Id).FirstOrDefault();
+            var modify = _db.Cars.FirstOrDefault(m => m.Id == car.Id);
             modify.Brand = car.Brand;
             modify.Model = car.Model;
             modify.Year = car.Year;
-            db.SaveChanges();
+            _db.SaveChanges();
             int CustomerId = car.CustomerId;
             return RedirectToAction("CarDetail", new { Id = CustomerId });
         }
@@ -144,7 +150,7 @@ namespace CarMaintenance.Controllers
 
         public IActionResult BillDetail(string carId)
         {
-            var bill = db.Bills.Where(m => m.CarId == carId).ToList();
+            var bill = _db.Bills.Where(m => m.CarId == carId).ToList();
 
             ViewBag.CarId = carId;
 
@@ -153,9 +159,9 @@ namespace CarMaintenance.Controllers
 
         public IActionResult BillDelete(int Id)
         {
-            var bill = db.Bills.Where(m => m.Id == Id).FirstOrDefault();
+            var bill = _db.Bills.FirstOrDefault(m => m.Id == Id);
             bill.IsDelete = true;
-            db.SaveChanges();
+            _db.SaveChanges();
             return RedirectToAction("BillDetail");
         }
 
@@ -176,8 +182,8 @@ namespace CarMaintenance.Controllers
             newbill.Date = DateTime.Now;
             newbill.Price = bill.Price;
             newbill.Project = bill.Project;
-            db.Bills.Add(newbill);
-            db.SaveChanges();
+            _db.Bills.Add(newbill);
+            _db.SaveChanges();
             string CarId = bill.CarId;
             return RedirectToAction("BillDetail", new { carId = CarId });
 
@@ -185,18 +191,18 @@ namespace CarMaintenance.Controllers
 
         public IActionResult BillEdit(string carId)
         {
-            var bill = db.Bills.Where(m => m.CarId == carId).FirstOrDefault();
+            var bill = _db.Bills.FirstOrDefault(m => m.CarId == carId);
             return View(bill);
         }
 
         [HttpPost]
         public IActionResult BillEdit(Bill bill)
         {
-            var modify = db.Bills.Where(m => m.CarId == bill.CarId).FirstOrDefault();
+            var modify = _db.Bills.FirstOrDefault(m => m.CarId == bill.CarId);
             modify.Date = bill.Date;
             modify.Price = bill.Price;
             modify.Project = bill.Project;
-            db.SaveChanges();
+            _db.SaveChanges();
 
             string CarId = bill.CarId;
             return RedirectToAction("BillDetail", new { carId = CarId });
@@ -204,13 +210,13 @@ namespace CarMaintenance.Controllers
 
         public IActionResult Search(string key)
         {
-            List<Customer> search = db.Customers.Where(m => m.Name == key).ToList();
-            List<Car> search1 = db.Cars.Where(m => m.Id == key).ToList();
+            List<Customer> search = _db.Customers.Where(m => m.Name.Contains(key)).ToList();
+            List<Car> search1 = _db.Cars.Where(m => m.Id.Contains(key)).ToList();
 
             if (search.Any() == true)
             {
-                string customerName = key;
-                return RedirectToAction("CustomerDetail", new { Name = customerName });
+                //string customerName = key;
+                return RedirectToAction("CustomerDetail", new { Name = key });
                 //return View(search);
             }
             else 

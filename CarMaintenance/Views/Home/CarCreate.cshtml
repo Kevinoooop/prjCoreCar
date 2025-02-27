@@ -12,7 +12,7 @@
         <form asp-action="CarCreate">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="CustomerId"></label>
+                <label asp-for="CustomerId">客戶</label>
                 <select asp-for="CustomerId" asp-items="ViewBag.CustomerIds">
                     <option value="">請選擇</option>
                 </select>

@@ -1,10 +1,13 @@
+using CarMaintenance;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-
+builder.Services.AddDbContext<RepairContext>();
 var app = builder.Build();
 
+//builder.Services.AddTransient();
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
